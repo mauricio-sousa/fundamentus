@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c745b5b501ed41a79f52ceee58edd37b)](https://app.codacy.com/gh/mauricio-sousa/fundamentus?utm_source=github.com&utm_medium=referral&utm_content=mauricio-sousa/fundamentus&utm_campaign=Badge_Grade_Settings)
 [![codecov](https://codecov.io/gh/mauricio-sousa/fundamentus/branch/master/graph/badge.svg?token=D74I99F0LU)](https://codecov.io/gh/mauricio-sousa/fundamentus)
 [![Python package](https://github.com/mauricio-sousa/fundamentus/actions/workflows/python-package.yml/badge.svg)](https://github.com/mauricio-sousa/fundamentus/actions/workflows/python-package.yml)
 [![Coverage Status](https://coveralls.io/repos/github/mauricio-sousa/fundamentus/badge.svg?branch=master)](https://coveralls.io/github/mauricio-sousa/fundamentus?branch=master)
