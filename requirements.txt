@@ -5,3 +5,4 @@ requests==2.25.1
 lxml==4.6.3
 flake8
 pytest-cov
+coveralls
