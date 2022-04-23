@@ -8,11 +8,14 @@ principais indicadores fundamentalistas em formato JSON.
 A API utiliza o microframework Flask.
 Também é possível utilizar via linha de comando.
 
-# Instalando
-    $ pip3 install -r requirements.txt
+## Instalando
+```
+$ pip3 install -r requirements.txt
+```
+## Executando o WebServer
+```
+$ uvicorn main:app --reload
+```
 
-# Executando o WebServer
-    $ uvicorn main:app --reload
-
-# Acessando a API
+## Acessando a API
 Conecte no endereço (ex.: http://127.0.0.1:8000/tickers) 
