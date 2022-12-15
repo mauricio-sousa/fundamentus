@@ -4,6 +4,7 @@ jobs:
   deploy:
     name: Deploy app
     runs-on: ubuntu-latest
+    environment: production   
     steps:
       # This step checks out a copy of your repository.
       - uses: actions/checkout@v2
