@@ -4,8 +4,11 @@ from datetime import datetime
 
 app = FastAPI()
 
-lista, dia = dict(get_data()), datetime.strftime(datetime.today(), '%d')
-lista = {outer_k: {inner_k: float(inner_v) for inner_k, inner_v in outer_v.items()} for outer_k, outer_v in lista.items()}
+lista, dia = dict(get_data()), datetime.strftime(datetime.today(), "%d")
+lista = {
+    outer_k: {inner_k: float(inner_v) for inner_k, inner_v in outer_v.items()}
+    for outer_k, outer_v in lista.items()
+}
 
 
 @app.get("/")
@@ -20,8 +23,10 @@ def get_ticker(ticker_name: str):
 
     ticker_name = ticker_name.upper()
     if ticker_name not in lista:
-        raise HTTPException(status_code=404, detail="Ticker: {} não encontrado!".format(ticker_name))
-    return (lista[ticker_name])
+        raise HTTPException(
+            status_code=404, detail="Ticker: {} não encontrado!".format(ticker_name)
+        )
+    return lista[ticker_name]
 
 
 @app.get("/tickers")
