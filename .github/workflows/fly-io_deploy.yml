@@ -1,5 +1,11 @@
 name: Deploy to Fly.io
-on: [push]
+
+on:
+  workflow_run:
+    workflows: ["Tests"]
+    branches: [master]
+    types:
+      - completed
 jobs:
   deploy:
     name: Deploy app
