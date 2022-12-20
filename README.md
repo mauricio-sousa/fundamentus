@@ -11,13 +11,13 @@ A API utiliza o microframework [fastAPI](https://fastapi.tiangolo.com).
 ## Instalando
 
 ```sh
-$ pip3 install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 ## Executando o WebServer
 
 ```sh
-$ uvicorn main:app --reload
+uvicorn main:app --reload
 ```
 
 ## Acessando a API
