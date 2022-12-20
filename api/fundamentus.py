@@ -2,11 +2,7 @@
 
 import re
 import requests
-from pprint import pprint
-
 from lxml.html import fragment_fromstring
-
-# from collections import OrderedDict
 from decimal import Decimal
 
 
@@ -56,6 +52,3 @@ def get_data(*args, **kwargs):
 def todecimal(string):
     string = string.translate(str.maketrans({".": "", "%": "", ",": "."}))
     return Decimal(string)
-
-
-# pprint(get_data())
