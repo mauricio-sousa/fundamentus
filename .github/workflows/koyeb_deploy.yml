@@ -1,0 +1,29 @@
+name: Deploy to Koyeb
+
+on:
+  workflow_run:
+    workflows: ["Tests"]
+    #branches: [master]
+    types:
+      - completed
+jobs:
+  deploy:
+    name: Deploy app
+    runs-on: ubuntu-latest
+    environment: 
+      name: Koyeb
+      url: https://api-fundamentus.koyeb.dev   
+    steps:
+      - name: Install and configure the Koyeb CLI
+        uses: koyeb-community/install-koyeb-cli@v2
+        with:
+          api_token: "${{ secrets.KOYEB_API_TOKEN }}"
+      - name: Build and deploy the application to Koyeb
+        uses: koyeb/action-git-deploy@v1
+        with:
+          app-name: fundamentus-api
+          service-name: fundamentus-api
+          service-ports: "5000:http"
+          service-routes: "/:5000"
+          service-instance-type: nano
+          service-regions	: was
