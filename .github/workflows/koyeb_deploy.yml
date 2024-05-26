@@ -1,11 +1,12 @@
 name: Deploy to Koyeb
 
-on:
-  workflow_run:
-    workflows: ["Tests"]
+on: [push, pull_request]
+#on:
+#  workflow_run:
+#    workflows: ["Tests"]
     #branches: [master]
-    types:
-      - completed
+#    types:
+#      - completed
 jobs:
   deploy:
     name: Deploy app
