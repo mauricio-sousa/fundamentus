@@ -26,5 +26,5 @@ jobs:
           service-name: fundamentus-api
           service-ports: "5000:http"
           service-routes: "/:5000"
-          service-instance-type: nano
+          service-instance-type: free
           service-regions	: was
