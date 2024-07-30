@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: 
       name: Koyeb
-      KOYEB_API_URL: https://fundamentus-api.koyeb.app
+      url: https://fundamentus-api.koyeb.app
     steps:
       - name: Install and configure the Koyeb CLI
         uses: koyeb-community/install-koyeb-cli@v2
