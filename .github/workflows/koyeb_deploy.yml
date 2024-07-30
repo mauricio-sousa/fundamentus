@@ -28,4 +28,4 @@ jobs:
           service-routes: "/:5000"
           service-instance-type: free
           service-regions	: was
-          KOYEB_API_URL: ${{ job.environment.url }}
+          name: ${{ job.environment.url }}
