@@ -1,26 +1,64 @@
 #!/usr/bin/env python3
+"""
+Scrapes financial data for Brazilian stocks from www.fundamentus.com.br.
+"""
 
-import re
 import requests
-from lxml.html import fragment_fromstring
+from lxml import html # Import html for fromstring
 from decimal import Decimal
+# Removed 're' and 'fragment_fromstring' as they are no longer needed
 
 
-def get_data(*args, **kwargs):
+def get_data(*args, **kwargs) -> dict:
+    """
+    Fetches and parses stock data from the Fundamentus website.
+
+    The data is scraped from http://www.fundamentus.com.br/resultado.php.
+    
+    Args:
+        *args: Not used.
+        **kwargs: Not used.
+
+    Returns:
+        dict: A dictionary where keys are stock tickers (str) and values are
+              dictionaries of financial indicators. Financial indicators are
+              keyed by their names (str) and values are Decimal objects.
+              Returns an empty dictionary if any error occurs during fetching
+              or parsing (e.g., network issues, unexpected HTML structure,
+              table not found).
+    """
     url = "http://www.fundamentus.com.br/resultado.php"
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36"
     }
-    content = requests.get(url, headers=headers).text
+    try:
+        response = requests.get(url, headers=headers, timeout=10) # Added timeout
+        response.raise_for_status()  # Raises an HTTPError for bad responses (4XX or 5XX)
+        content = response.text
+    except requests.exceptions.RequestException as e:
+        print(f"Error during requests to {url}: {e}") # Modified error message slightly
+        return {}
 
-    pattern = re.compile('<table id="resultado".*</table>', re.DOTALL)
-    page = fragment_fromstring(re.findall(pattern, content)[0])
-    result = {}
+    try:
+        doc = html.fromstring(content) # Parse the full HTML content
+        tables = doc.xpath('//table[@id="resultado"]') # Find the table by ID
 
-    for rows in page.xpath("tbody")[0].findall("tr"):
-        result.update(
-            {
-                rows.getchildren()[0][0]
+        if not tables:
+            print(f"Error: Table with id='resultado' not found on {url}") # Added url to message
+            return {}
+        
+        page = tables[0] # The 'page' is now the table element itself
+        result = {}
+
+        tbody_list = page.xpath("tbody") # This should work on the table element
+        if not tbody_list:
+            print(f"Error: tbody element not found in table from {url}")
+            return {}
+
+        for rows in tbody_list[0].findall("tr"):
+            result.update(
+                {
+                    rows.getchildren()[0][0]
                 .getchildren()[0]
                 .text: {
                     "Cotacao": todecimal(rows.getchildren()[1].text),
@@ -48,7 +86,23 @@ def get_data(*args, **kwargs):
         )
     return result
 
+    except html.etree.LxmlError as e: # Catch potential lxml parsing errors
+        print(f"Error parsing HTML from {url}: {e}")
+        return {}
 
-def todecimal(string):
-    string = string.translate(str.maketrans({".": "", "%": "", ",": "."}))
-    return Decimal(string)
+
+def todecimal(string_value: str) -> Decimal:
+    """
+    Converts a string value to a Decimal object.
+
+    The string can contain Brazilian Portuguese number formatting (',' as decimal separator)
+    and percentage signs, which are removed before conversion.
+
+    Args:
+        string_value (str): The string to convert.
+
+    Returns:
+        Decimal: The converted Decimal object.
+    """
+    string_value = string_value.translate(str.maketrans({".": "", "%": "", ",": "."}))
+    return Decimal(string_value)
