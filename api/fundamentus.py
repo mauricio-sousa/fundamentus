@@ -84,7 +84,7 @@ def get_data(*args, **kwargs) -> dict:
                 }
             }
         )
-    return result
+        return result # Moved inside the try block
 
     except html.etree.LxmlError as e: # Catch potential lxml parsing errors
         print(f"Error parsing HTML from {url}: {e}")
