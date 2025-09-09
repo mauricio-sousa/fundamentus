@@ -2,29 +2,32 @@ from fastapi import FastAPI, HTTPException
 from api.fundamentus import get_data
 from datetime import datetime
 from typing import Dict
-from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException
+from api.fundamentus import get_data
+from datetime import datetime
+from typing import Dict
 
 app = FastAPI()
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Handler de ciclo de vida que inicializa os dados da aplicação.
+async def fetch_and_convert():
+    """Helper que chama `get_data()` e converte Decimal -> float.
 
-    Esta função é executada durante o startup do aplicativo e carrega os dados
-    de `fundamentus.get_data`, convertendo os valores para float para uso na API.
+    Retorna um dicionário pronto para serialização JSON. Em caso de erro ao
+    buscar os dados externos, lança uma HTTPException(503).
     """
 
-    global lista, dia
-    lista, dia = await get_data(), datetime.strftime(datetime.today(), "%d")
-    lista = {
+    try:
+        raw = await get_data()
+    except Exception as e:
+        # Falha na consulta externa — retornar 503 para o cliente
+        raise HTTPException(status_code=503, detail=f"Erro ao obter dados externos: {e}")
+
+    converted = {
         outer_k: {inner_k: float(inner_v) for inner_k, inner_v in outer_v.items()}
-        for outer_k, outer_v in lista.items()
+        for outer_k, outer_v in raw.items()
     }
-    yield
-
-
-app.router.lifespan_context = lifespan
+    return converted
 
 
 @app.get("/")
@@ -73,11 +76,12 @@ async def get_ticker(ticker_name: str) -> Dict[str, float]:
     """
 
     ticker_name = ticker_name.upper()
-    if ticker_name not in lista:
+    data = await fetch_and_convert()
+    if ticker_name not in data:
         raise HTTPException(
             status_code=404, detail="Ticker: {} não encontrado!".format(ticker_name)
         )
-    return lista[ticker_name]
+    return data[ticker_name]
 
 
 
@@ -117,4 +121,5 @@ async def get_all_tickers() -> Dict[str, Dict[str, float]]:
         Dict[str, Dict[str, float]]: mapeamento ticker -> indicadores.
     """
 
-    return lista
+    data = await fetch_and_convert()
+    return data
