@@ -24,7 +24,14 @@ async def get_data(*args, **kwargs) -> Dict[str, Dict[str, Decimal]]:
 
     url = "https://www.fundamentus.com.br/resultado.php"
     headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+        "Referer": "https://www.fundamentus.com.br/",
+        "Upgrade-Insecure-Requests": "1",
+        "Cache-Control": "max-age=0"
     }
 
     async with httpx.AsyncClient() as client:
