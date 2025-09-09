@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import re
 import httpx
 from bs4 import BeautifulSoup
 from decimal import Decimal
