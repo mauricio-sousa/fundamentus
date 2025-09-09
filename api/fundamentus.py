@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import httpx
-from bs4 import BeautifulSoup
+from lxml import html
 from decimal import Decimal
 from aiocache import cached
 from typing import Dict
@@ -24,49 +24,55 @@ async def get_data(*args, **kwargs) -> Dict[str, Dict[str, Decimal]]:
 
     url = "https://www.fundamentus.com.br/resultado.php"
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
         "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
-        "Accept-Encoding": "gzip, deflate, br",
+        "Cache-Control": "max-age=0",
+        "Sec-Fetch-Site": "same-origin",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Dest": "document",
         "Connection": "keep-alive",
-        "Referer": "https://www.fundamentus.com.br/",
         "Upgrade-Insecure-Requests": "1",
-        "Cache-Control": "max-age=0"
+        "Referer": "https://www.fundamentus.com.br/",
     }
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=10.0) as client:
         response = await client.get(url, headers=headers)
         response.raise_for_status()
 
-    soup = BeautifulSoup(response.text, "html.parser")
-    table = soup.find("table", {"id": "resultado"})
+    page = html.fromstring(response.text)
     result = {}
 
-    for row in table.find("tbody").find_all("tr"):
-        columns = row.find_all("td")
-        ticker = columns[0].text.strip()
-        result[ticker] = {
-            "Cotacao": todecimal(columns[1].text),
-            "P/L": todecimal(columns[2].text),
-            "P/VP": todecimal(columns[3].text),
-            "PSR": todecimal(columns[4].text),
-            "DY": todecimal(columns[5].text),
-            "P/Ativo": todecimal(columns[6].text),
-            "P/Cap.Giro": todecimal(columns[7].text),
-            "P/EBIT": todecimal(columns[8].text),
-            "P/ACL": todecimal(columns[9].text),
-            "EV/EBIT": todecimal(columns[10].text),
-            "EV/EBITDA": todecimal(columns[11].text),
-            "Mrg.Ebit": todecimal(columns[12].text),
-            "Mrg.Liq.": todecimal(columns[13].text),
-            "Liq.Corr.": todecimal(columns[14].text),
-            "ROIC": todecimal(columns[15].text),
-            "ROE": todecimal(columns[16].text),
-            "Liq.2meses": todecimal(columns[17].text),
-            "Pat.Liq": todecimal(columns[18].text),
-            "Div.Brut/Pat.": todecimal(columns[19].text),
-            "Cresc.5anos": todecimal(columns[20].text),
-        }
+    FIELDS = [
+        "Cotacao",
+        "P/L",
+        "P/VP",
+        "PSR",
+        "DY",
+        "P/Ativo",
+        "P/Cap.Giro",
+        "P/EBIT",
+        "P/ACL",
+        "EV/EBIT",
+        "EV/EBITDA",
+        "Mrg.Ebit",
+        "Mrg.Liq.",
+        "Liq.Corr.",
+        "ROIC",
+        "ROE",
+        "Liq.2meses",
+        "Pat.Liq",
+        "Div.Brut/Pat.",
+        "Cresc.5anos",
+    ]
+
+    for tr in page.xpath(".//tbody/tr"):
+        tds = tr.findall("td")
+        if len(tds) < 21:
+            continue
+        ticker = tds[0].text_content().strip()
+        values = [td.text_content().strip() for td in tds]
+        result[ticker] = {FIELDS[i]: todecimal(values[i + 1]) for i in range(len(FIELDS))}
 
     return result
 
