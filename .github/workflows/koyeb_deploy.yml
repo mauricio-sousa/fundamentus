@@ -1,17 +1,17 @@
 name: Deploy to Koyeb
 
 on: [push, pull_request]
-#on:
-#  workflow_run:
-#    workflows: ["Tests"]
-    #branches: [master]
-#    types:
-#      - completed
+on:
+  workflow_run:
+    workflows: ["Tests"]
+    branches: [master]
+    types:
+      - completed
 jobs:
   deploy:
     name: Deploy app
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: Koyeb
       url: https://fundamentus-api.koyeb.app
     steps:
