@@ -1,10 +1,5 @@
 from fastapi import FastAPI, HTTPException
 from api.fundamentus import get_data
-from datetime import datetime
-from typing import Dict
-from fastapi import FastAPI, HTTPException
-from api.fundamentus import get_data
-from datetime import datetime
 from typing import Dict
 
 app = FastAPI()
