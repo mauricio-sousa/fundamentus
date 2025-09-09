@@ -50,23 +50,9 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         verbose: true
 
-    - name: Coveralls
-      uses: AndreMiras/coveralls-python-action@develop
+    - name: Upload coverage to Coveralls
+      uses: coverallsapp/github-action@v2
       with:
+        repo-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
         parallel: true
         flag-name: Unit Test
-
-    - name: Upload coverage data to coveralls.io
-      env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_PARALLEL: true
-      run: coveralls --service=github
-  finish:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Coveralls Finished
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        parallel-finished: true
