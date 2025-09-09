@@ -1,6 +1,5 @@
 name: Deploy to Koyeb
 
-on: [push, pull_request]
 on:
   workflow_run:
     workflows: ["Tests"]
