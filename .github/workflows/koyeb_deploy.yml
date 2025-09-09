@@ -27,4 +27,3 @@ jobs:
           service-routes: "/:5000"
           service-instance-type: free
           service-regions	: was
-          service-min-scale: 0
