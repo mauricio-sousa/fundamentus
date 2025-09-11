@@ -222,8 +222,3 @@ mcp = FastApiMCP(
 
 # Mount the MCP server to your FastAPI app
 mcp.mount()
-
-# Run the app
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
