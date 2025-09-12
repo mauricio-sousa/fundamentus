@@ -4,7 +4,7 @@ import httpx
 from lxml import html
 from decimal import Decimal
 from aiocache import cached
-from typing import Dict
+from typing import Dict, List
 
 
 @cached(ttl=3600)  # Cache por 1 hora
@@ -43,32 +43,13 @@ async def get_data(*args, **kwargs) -> Dict[str, Dict[str, Decimal]]:
     page = html.fromstring(response.text)
     result = {}
 
-    FIELDS = [
-        "Cotacao",
-        "P/L",
-        "P/VP",
-        "PSR",
-        "DY",
-        "P/Ativo",
-        "P/Cap.Giro",
-        "P/EBIT",
-        "P/ACL",
-        "EV/EBIT",
-        "EV/EBITDA",
-        "Mrg.Ebit",
-        "Mrg.Liq.",
-        "Liq.Corr.",
-        "ROIC",
-        "ROE",
-        "Liq.2meses",
-        "Pat.Liq",
-        "Div.Brut/Pat.",
-        "Cresc.5anos",
-    ]
+    # Extrai os cabeçalhos da tabela
+    header_elements = page.xpath(".//thead/tr/th")
+    FIELDS: List[str] = [th.text_content().strip() for th in header_elements][1:]
 
     for tr in page.xpath(".//tbody/tr"):
         tds = tr.findall("td")
-        if len(tds) < 21:
+        if len(tds) < len(FIELDS) + 1:
             continue
         ticker = tds[0].text_content().strip()
         values = [td.text_content().strip() for td in tds]
