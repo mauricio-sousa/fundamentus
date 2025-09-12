@@ -1,4 +1,3 @@
-import asyncio
 from typing import Any, Dict
 
 from api.fundamentus import get_data
