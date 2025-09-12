@@ -13,6 +13,31 @@ def test_todecimal():
 def test_get_data():
     mock_html = """
     <table id="resultado">
+        <thead>
+            <tr>
+                <th>Papel</th>
+                <th>Cotação</th>
+                <th>P/L</th>
+                <th>P/VP</th>
+                <th>PSR</th>
+                <th>Div.Yield</th>
+                <th>P/Ativo</th>
+                <th>P/Cap.Giro</th>
+                <th>P/EBIT</th>
+                <th>P/Ativ Circ.Liq</th>
+                <th>EV/EBIT</th>
+                <th>EV/EBITDA</th>
+                <th>Mrg Ebit</th>
+                <th>Mrg. Líq.</th>
+                <th>Liq. Corr.</th>
+                <th>ROIC</th>
+                <th>ROE</th>
+                <th>Liq.2meses</th>
+                <th>Patrim. Líq</th>
+                <th>Dív.Brut/ Patrim.</th>
+                <th>Cresc. Rec.5a</th>
+            </tr>
+        </thead>
         <tbody>
             <tr>
                 <td>ABEV3</td>
@@ -56,7 +81,7 @@ def test_get_data():
         result = asyncio.run(get_data.__wrapped__())
         assert "ABEV3" in result
         # checa alguns campos
-        assert result["ABEV3"]["Cotacao"] == Decimal("15.00")
+        assert result["ABEV3"]["Cotação"] == Decimal("15.00")
         assert result["ABEV3"]["P/L"] == Decimal("12.50")
 
 
@@ -64,6 +89,31 @@ def test_ignores_short_rows():
     # Uma linha com menos de 21 colunas deve ser ignorada (cobrir branch continue)
     mock_html = """
     <table id="resultado">
+        <thead>
+            <tr>
+                <th>Papel</th>
+                <th>Cotação</th>
+                <th>P/L</th>
+                <th>P/VP</th>
+                <th>PSR</th>
+                <th>Div.Yield</th>
+                <th>P/Ativo</th>
+                <th>P/Cap.Giro</th>
+                <th>P/EBIT</th>
+                <th>P/Ativ Circ.Liq</th>
+                <th>EV/EBIT</th>
+                <th>EV/EBITDA</th>
+                <th>Mrg Ebit</th>
+                <th>Mrg. Líq.</th>
+                <th>Liq. Corr.</th>
+                <th>ROIC</th>
+                <th>ROE</th>
+                <th>Liq.2meses</th>
+                <th>Patrim. Líq</th>
+                <th>Dív.Brut/ Patrim.</th>
+                <th>Cresc. Rec.5a</th>
+            </tr>
+        </thead>
         <tbody>
             <tr>
                 <td>SHORT</td>

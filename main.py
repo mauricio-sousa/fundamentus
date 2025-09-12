@@ -1,12 +1,19 @@
 from fastapi_mcp import FastApiMCP
-from fastapi import FastAPI, HTTPException
-from api.fundamentus import get_data
-from typing import Dict
+from fastapi import FastAPI, HTTPException, Query
+from api.lazy_loader import lazy_loader
+from api.models import Indicadores, TickerData
 
 app = FastAPI()
 
-# Criar o servidor MCP antes de definir as rotas
+mcp = FastApiMCP(
+    app,
+    name="API Fundamentus",
+    description="Indicadores fundamentalistas das empresas listadas na B3.",
+    describe_all_responses=True,        # Include all possible response schemas in tool descriptions
+    describe_full_response_schema=True  # Include full JSON schema in tool descriptions
+)
 
+mcp.mount_http()
 
 async def fetch_and_convert():
     """Chama `get_data()` e prepara o resultado para resposta JSON.
@@ -26,7 +33,7 @@ async def fetch_and_convert():
     """
 
     try:
-        raw = await get_data()
+        raw = await lazy_loader.get_data()
     except Exception as e:
         # Falha na consulta externa — retornar 503 para o cliente
         raise HTTPException(status_code=503, detail=f"Erro ao obter dados externos: {e}")
@@ -48,42 +55,8 @@ async def get_all_urls() -> list:
     url_list = [{"path": route.path, "name": route.name} for route in app.routes]
     return url_list
 
-@app.get(
-    "/ticker/{ticker_name}", operation_id="get_ticker",
-    responses={
-        200: {
-            "description": "Indicadores fundamentalistas do ticker",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "Cotacao": 34.41,
-                        "P/L": 5.73,
-                        "P/VP": 1.11,
-                        "PSR": 0.899,
-                        "DY": 15.13,
-                        "P/Ativo": 0.377,
-                        "P/Cap.Giro": -10.24,
-                        "P/EBIT": 2.16,
-                        "P/ACL": -0.7,
-                        "EV/EBIT": 3.71,
-                        "EV/EBITDA": 2.73,
-                        "Mrg.Ebit": 41.67,
-                        "Mrg.Liq.": 15.78,
-                        "Liq.Corr.": 0.76,
-                        "ROIC": 18.87,
-                        "ROE": 19.38,
-                        "Liq.2meses": 311662000.0,
-                        "Pat.Liq": 399222000000.0,
-                        "Div.Brut/Pat.": 0.93,
-                        "Cresc.5anos": 6.17
-                    }
-                }
-            },
-        },
-        404: {"description": "Ticker não encontrado"},
-    },
-)
-async def get_ticker(ticker_name: str) -> Dict[str, float]:
+@app.get("/ticker/{ticker_name}", operation_id="get_ticker", response_model=Indicadores)
+async def get_ticker(ticker_name: str) -> Indicadores:
     """Retorna os indicadores para um ticker (código do ativo) específico.
 
     Parâmetros:
@@ -93,30 +66,6 @@ async def get_ticker(ticker_name: str) -> Dict[str, float]:
     Retorno:
     - Um dicionário onde chaves são nomes de indicadores (por exemplo,
       'P/L', 'ROE') e valores são floats prontos para serialização JSON.
-
-    Exemplo de resposta:
-    {
-        "Cotacao": 34.41,
-        "P/L": 5.73,
-        "P/VP": 1.11,
-        "PSR": 0.899,
-        "DY": 15.13,
-        "P/Ativo": 0.377,
-        "P/Cap.Giro": -10.24,
-        "P/EBIT": 2.16,
-        "P/ACL": -0.7,
-        "EV/EBIT": 3.71,
-        "EV/EBITDA": 2.73,
-        "Mrg.Ebit": 41.67,
-        "Mrg.Liq.": 15.78,
-        "Liq.Corr.": 0.76,
-        "ROIC": 18.87,
-        "ROE": 19.38,
-        "Liq.2meses": 311662000.0,
-        "Pat.Liq": 399222000000.0,
-        "Div.Brut/Pat.": 0.93,
-        "Cresc.5anos": 6.17
-    }
 
     Erros:
     - Se o ticker não existir no conjunto de dados, retorna 404 (HTTPException).
@@ -132,93 +81,31 @@ async def get_ticker(ticker_name: str) -> Dict[str, float]:
         )
     return data[ticker_name]
 
-@app.get(
-    "/tickers",
-    responses={
-        200: {
-            "description": "Mapeamento ticker -> indicadores",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "CSTB3": {
-                            "Cotacao": 150.0,
-                            "P/L": 0.0,
-                            "P/VP": 0.0,
-                            "PSR": 0.0,
-                            "DY": 0.0,
-                            "P/Ativo": 0.0,
-                            "P/Cap.Giro": 0.0,
-                            "P/EBIT": 0.0,
-                            "P/ACL": 0.0,
-                            "EV/EBIT": 0.0,
-                            "EV/EBITDA": 0.0,
-                            "Mrg.Ebit": 40.85,
-                            "Mrg.Liq.": 28.98,
-                            "Liq.Corr.": 2.6,
-                            "ROIC": 22.4,
-                            "ROE": 20.11,
-                            "Liq.2meses": 0.0,
-                            "Pat.Liq": 8420670000.0,
-                            "Div.Brut/Pat.": 0.14,
-                            "Cresc.5anos": 31.91
-                        },
-                        "MNSA4": {
-                            "Cotacao": 0.47,
-                            "P/L": 0.0,
-                            "P/VP": 0.0,
-                            "PSR": 0.0,
-                            "DY": 0.0,
-                            "P/Ativo": 0.0,
-                            "P/Cap.Giro": 0.0,
-                            "P/EBIT": 0.0,
-                            "P/ACL": 0.0,
-                            "EV/EBIT": 0.0,
-                            "EV/EBITDA": 0.0,
-                            "Mrg.Ebit": -208.15,
-                            "Mrg.Liq.": -362.66,
-                            "Liq.Corr.": 3.63,
-                            "ROIC": -13.5,
-                            "ROE": 145.7,
-                            "Liq.2meses": 0.0,
-                            "Pat.Liq": -9105000.0,
-                            "Div.Brut/Pat.": -6.52,
-                            "Cresc.5anos": -41.11
-                        }
-                    }
-                }
-            },
-        }
-    },
-)
-async def get_all_tickers() -> Dict[str, Dict[str, float]]:
-    """Retorna os indicadores dos dois primeiros tickers encontrados.
+@app.get("/tickers", response_model=TickerData)
+async def get_all_tickers(
+    skip: int = Query(0, ge=0, description="Número de tickers a pular"),
+    limit: int = Query(100, ge=1, le=1000, description="Número de tickers a retornar")
+) -> TickerData:
+    """Retorna os indicadores para uma lista paginada de tickers.
+
+    Parâmetros:
+    - skip: número de tickers a pular (para paginação).
+    - limit: número máximo de tickers a retornar.
 
     Retorno:
     - Dicionário mapeando cada ticker (código do ativo) para outro dicionário
-      com indicadores numéricos (float). Exemplo:
-
-      {
-        "CSTB3": {...},
-        "MNSA4": {...}
-      }
+      com indicadores numéricos (float).
 
     Observações:
-    - Os dados são obtidos sob demanda (fetch ondemand) na primeira requisição
+    - Os dados são obtidos sob demanda (fetch on-demand) na primeira requisição
       e em seguida servidos a partir do cache por 1 hora (TTL). Se o serviço
       externo estiver indisponível, a requisição retornará 503 (via
       fetch_and_convert).
     """
 
     data = await fetch_and_convert()
-    return data
+    tickers = list(data.keys())[skip : skip + limit]
+    return {ticker: data[ticker] for ticker in tickers}
 
-mcp = FastApiMCP(
-    app,
-    name="API Fundamentus",
-    description="Indicadores fundamentalistas das empresas listadas na B3.",
-    describe_all_responses=True,        # Include all possible response schemas in tool descriptions
-    describe_full_response_schema=True  # Include full JSON schema in tool descriptions
-)
-
-# Mount the MCP server to your FastAPI app
-mcp.mount()
+# Refresh the MCP server to include the new endpoint
+mcp.setup_server()
