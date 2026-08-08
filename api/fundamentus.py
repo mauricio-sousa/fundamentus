@@ -2,17 +2,17 @@
 
 import httpx
 from lxml import html
-from decimal import Decimal
 from aiocache import cached
 from typing import Dict, List
+from decimal import Decimal
 
 
-@cached(ttl=3600)  # Cache por 1 hora
+@cached(ttl=10800)  # Cache por 3 horas
 async def get_data(*args, **kwargs) -> Dict[str, Dict[str, Decimal]]:
     """Consulta o site Fundamentus e retorna um dicionário com os indicadores.
 
     Retorna um mapeamento de ticker -> indicadores, onde cada indicador é um
-    Decimal. A função usa cache (TTL = 3600s) para reduzir chamadas ao site.
+    Decimal. A função usa cache (TTL = 10800s) para reduzir chamadas ao site.
 
     Args:
         *args: argumentos posicionais (ignorados).
@@ -53,23 +53,26 @@ async def get_data(*args, **kwargs) -> Dict[str, Dict[str, Decimal]]:
             continue
         ticker = tds[0].text_content().strip()
         values = [td.text_content().strip() for td in tds]
-        result[ticker] = {FIELDS[i]: todecimal(values[i + 1]) for i in range(len(FIELDS))}
+        result[ticker] = {FIELDS[i]: to_decimal(values[i + 1]) for i in range(len(FIELDS))}
 
     return result
 
 
-def todecimal(string: str) -> Decimal:
+def to_decimal(string: str) -> Decimal:
     """Converte uma string numérica formatada (com '.' como separador de milhares
     e ',' como separador decimal) para Decimal.
 
     Exemplos aceitáveis: '1.234,56', '12,34', '5,6%'.
+    Valores não numéricos (como '-' ou '') retornam Decimal('0.0').
 
     Args:
         string (str): string a ser convertida.
 
     Returns:
-        Decimal: valor convertido.
+        Decimal: valor convertido, ou Decimal('0.0') se não for possível converter.
     """
 
-    string = string.translate(str.maketrans({".": "", "%": "", ",": "."}))
+    string = string.strip().translate(str.maketrans({".": "", "%": "", ",": "."}))
+    if not string or string == "-":
+        return Decimal("0.0")
     return Decimal(string)

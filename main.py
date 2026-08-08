@@ -1,6 +1,6 @@
 from fastapi_mcp import FastApiMCP
 from fastapi import FastAPI, HTTPException, Query
-from api.lazy_loader import lazy_loader
+from api.fundamentus import get_data
 from api.models import Indicadores, TickerData
 
 app = FastAPI()
@@ -15,34 +15,22 @@ mcp = FastApiMCP(
 
 mcp.mount_http()
 
-async def fetch_and_convert():
-    """Chama `get_data()` e prepara o resultado para resposta JSON.
+async def fetch_data():
+    """Chama `get_data()` e lida com falhas.
 
     O retorno é um dicionário mapeando o código do ativo (ticker) para um
-    dicionário de indicadores numéricos. "Ticker" aqui significa o código
-    alfanumérico que identifica um ativo negociado na B3 (por exemplo
-    'ABEV3' ou 'PETR4').
-
-    Conversões:
-    - Decimal -> float para serialização JSON.
+    dicionário de indicadores numéricos (floats).
 
     Erros:
     - Em caso de falha na requisição ao site externo, levanta
       HTTPException(status_code=503) para indicar indisponibilidade do
       serviço externo.
     """
-
     try:
-        raw = await lazy_loader.get_data()
+        return await get_data()
     except Exception as e:
         # Falha na consulta externa — retornar 503 para o cliente
         raise HTTPException(status_code=503, detail=f"Erro ao obter dados externos: {e}")
-
-    converted = {
-        outer_k: {inner_k: float(inner_v) for inner_k, inner_v in outer_v.items()}
-        for outer_k, outer_v in raw.items()
-    }
-    return converted
 
 
 @app.get("/")
@@ -51,8 +39,9 @@ async def get_all_urls() -> list:
 
     Useful para descoberta rápida das rotas disponíveis.
     """
-
-    url_list = [{"path": route.path, "name": route.name} for route in app.routes]
+    # Filtrando para não exibir rotas internas do MCP na resposta raiz
+    allowed_routes = {"/", "/tickers", "/ticker/{ticker_name}"}
+    url_list = [{"path": route.path, "name": route.name} for route in app.routes if route.path in allowed_routes]
     return url_list
 
 @app.get("/ticker/{ticker_name}", operation_id="get_ticker", response_model=Indicadores)
@@ -74,7 +63,7 @@ async def get_ticker(ticker_name: str) -> Indicadores:
     """
 
     ticker_name = ticker_name.upper()
-    data = await fetch_and_convert()
+    data = await fetch_data()
     if ticker_name not in data:
         raise HTTPException(
             status_code=404, detail="Ticker: {} não encontrado!".format(ticker_name)
@@ -95,15 +84,9 @@ async def get_all_tickers(
     Retorno:
     - Dicionário mapeando cada ticker (código do ativo) para outro dicionário
       com indicadores numéricos (float).
-
-    Observações:
-    - Os dados são obtidos sob demanda (fetch on-demand) na primeira requisição
-      e em seguida servidos a partir do cache por 1 hora (TTL). Se o serviço
-      externo estiver indisponível, a requisição retornará 503 (via
-      fetch_and_convert).
     """
 
-    data = await fetch_and_convert()
+    data = await fetch_data()
     tickers = list(data.keys())[skip : skip + limit]
     return {ticker: data[ticker] for ticker in tickers}
 
