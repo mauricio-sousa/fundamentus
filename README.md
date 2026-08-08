@@ -15,7 +15,7 @@ em JSON. O projeto foi atualizado para usar requisições assíncronas (`httpx`)
 
 ## Pré-requisitos
 
-- Python 3.11+ (este projeto usa 3.13 no ambiente de desenvolvimento)
+- Python 3.11+ (este projeto usa 3.14.4 no ambiente de desenvolvimento e em produção)
 - virtualenv ou venv recomendados
 
 ## Instalação
