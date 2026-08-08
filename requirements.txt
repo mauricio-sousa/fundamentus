@@ -5,3 +5,4 @@ aiocache==0.12.3
 lxml==6.0.1
 fastapi-mcp==0.4.0
 starlette==0.47.3
+mcp==1.27.2
