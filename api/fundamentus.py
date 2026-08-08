@@ -13,15 +13,8 @@ async def get_data(*args, **kwargs) -> Dict[str, Dict[str, Decimal]]:
 
     Retorna um mapeamento de ticker -> indicadores, onde cada indicador é um
     Decimal. A função usa cache (TTL = 10800s) para reduzir chamadas ao site.
-
-    Args:
-        *args: argumentos posicionais (ignorados).
-        **kwargs: argumentos nomeados (ignorados).
-
-    Returns:
-        Dict[str, Dict[str, Decimal]]: dicionário com os dados dos tickers.
+    (Argumentos *args e **kwargs são ignorados).
     """
-
     url = "https://www.fundamentus.com.br/resultado.php"
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",
@@ -59,19 +52,10 @@ async def get_data(*args, **kwargs) -> Dict[str, Dict[str, Decimal]]:
 
 
 def to_decimal(string: str) -> Decimal:
-    """Converte uma string numérica formatada (com '.' como separador de milhares
-    e ',' como separador decimal) para Decimal.
-
-    Exemplos aceitáveis: '1.234,56', '12,34', '5,6%'.
-    Valores não numéricos (como '-' ou '') retornam Decimal('0.0').
-
-    Args:
-        string (str): string a ser convertida.
-
-    Returns:
-        Decimal: valor convertido, ou Decimal('0.0') se não for possível converter.
-    """
-
+    """Converte uma string numérica formatada para Decimal."""
+    # Usa '.' como separador de milhares e ',' como separador decimal.
+    # Exemplos aceitáveis: '1.234,56', '12,34', '5,6%'.
+    # Valores não numéricos (como '-' ou '') retornam Decimal('0.0').
     string = string.strip().translate(str.maketrans({".": "", "%": "", ",": "."}))
     if not string or string == "-":
         return Decimal("0.0")

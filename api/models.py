@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import Dict
 from decimal import Decimal
 
+
 class Indicadores(BaseModel):
     cotacao: Decimal = Field(alias="Cotação", description="Preço atual da ação.")
     p_l: Decimal = Field(alias="P/L", description="Preço/Lucro: Preço da ação dividido pelo lucro por ação.")
@@ -26,5 +27,6 @@ class Indicadores(BaseModel):
     cresc_rec_5a: Decimal = Field(alias="Cresc. Rec.5a", description="Crescimento da Receita (média de 5 anos): Crescimento médio da receita nos últimos 5 anos.")
 
     model_config = ConfigDict(populate_by_name=True)
+
 
 TickerData = Dict[str, Indicadores]
