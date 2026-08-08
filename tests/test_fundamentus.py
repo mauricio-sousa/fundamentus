@@ -1,13 +1,21 @@
 import asyncio
-from decimal import Decimal
 from unittest.mock import AsyncMock, patch
-from api.fundamentus import get_data, todecimal
+from api.fundamentus import get_data, to_decimal
+from decimal import Decimal
 
 
-def test_todecimal():
-    assert todecimal("1.234,56") == Decimal("1234.56")
-    assert todecimal("12,34") == Decimal("12.34")
-    assert todecimal("5,6%") == Decimal("5.6")
+def test_to_decimal():
+    assert to_decimal("1.234,56") == Decimal("1234.56")
+    assert to_decimal("12,34") == Decimal("12.34")
+    assert to_decimal("5,6%") == Decimal("5.6")
+
+
+def test_to_decimal_dash():
+    assert to_decimal("-") == Decimal("0.0")
+
+
+def test_to_decimal_empty():
+    assert to_decimal("") == Decimal("0.0")
 
 
 def test_get_data():
@@ -27,6 +35,7 @@ def test_get_data():
                 <th>P/Ativ Circ.Liq</th>
                 <th>EV/EBIT</th>
                 <th>EV/EBITDA</th>
+                <th>Mrg Bruta</th>
                 <th>Mrg Ebit</th>
                 <th>Mrg. Líq.</th>
                 <th>Liq. Corr.</th>
@@ -34,7 +43,7 @@ def test_get_data():
                 <th>ROE</th>
                 <th>Liq.2meses</th>
                 <th>Patrim. Líq</th>
-                <th>Dív.Brut/ Patrim.</th>
+                <th>Dív.Líq/ Patrim.</th>
                 <th>Cresc. Rec.5a</th>
             </tr>
         </thead>
@@ -52,6 +61,7 @@ def test_get_data():
                 <td>0,4</td>
                 <td>0,5</td>
                 <td>0,6</td>
+                <td>0,65</td>
                 <td>0,7</td>
                 <td>0,8</td>
                 <td>0,9</td>
@@ -86,7 +96,7 @@ def test_get_data():
 
 
 def test_ignores_short_rows():
-    # Uma linha com menos de 21 colunas deve ser ignorada (cobrir branch continue)
+    # Uma linha com menos de 22 colunas deve ser ignorada (cobrir branch continue)
     mock_html = """
     <table id="resultado">
         <thead>
@@ -103,6 +113,7 @@ def test_ignores_short_rows():
                 <th>P/Ativ Circ.Liq</th>
                 <th>EV/EBIT</th>
                 <th>EV/EBITDA</th>
+                <th>Mrg Bruta</th>
                 <th>Mrg Ebit</th>
                 <th>Mrg. Líq.</th>
                 <th>Liq. Corr.</th>
@@ -110,7 +121,7 @@ def test_ignores_short_rows():
                 <th>ROE</th>
                 <th>Liq.2meses</th>
                 <th>Patrim. Líq</th>
-                <th>Dív.Brut/ Patrim.</th>
+                <th>Dív.Líq/ Patrim.</th>
                 <th>Cresc. Rec.5a</th>
             </tr>
         </thead>
@@ -133,6 +144,7 @@ def test_ignores_short_rows():
                 <td>0,4</td>
                 <td>0,5</td>
                 <td>0,6</td>
+                <td>0,65</td>
                 <td>0,7</td>
                 <td>0,8</td>
                 <td>0,9</td>
